@@ -1,11 +1,11 @@
-// TrunfoComparacao.c — Desafio de Lógica: Comparação de Cartas (Países)
+// logicaSuperTrunfo.c — Desafio de Lógica: Comparação de Cartas (Países)
 // =====================================================================
 // Programa em C que simula comparações de cartas do Super Trunfo.
 // Está dividido em três níveis: Novato, Aventureiro e Mestre.
 // Cada nível aumenta a complexidade da lógica usada para decidir o vencedor.
 //
-// Como compilar:   gcc -std=c11 -Wall -Wextra -O2 TrunfoComparacao.c -o TrunfoComparacao
-// Como executar:   ./TrunfoComparacao   (ou TrunfoComparacao.exe no Windows)
+// Como compilar:   gcc -std=c11 -Wall -Wextra -O2 logicaSuperTrunfo.c -o logicaSuperTrunfo
+// Como executar:   ./logicaSuperTrunfo   (ou logicaSuperTrunfo.exe no Windows)
 // =====================================================================
 
 #include <stdio.h>
