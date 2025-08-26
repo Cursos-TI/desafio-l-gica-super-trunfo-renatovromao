@@ -1,11 +1,11 @@
 // TrunfoComparacao.c — Desafio de Lógica: Comparação de Cartas (Países)
 // =====================================================================
-// Este programa implementa um jogo estilo Super Trunfo focado em cidades.
-// Está dividido em três níveis de dificuldade (Novato, Aventureiro e Mestre),
-// cada um com requisitos diferentes para treinar lógica em C.
+// Programa em C que simula comparações de cartas do Super Trunfo.
+// Está dividido em três níveis: Novato, Aventureiro e Mestre.
+// Cada nível aumenta a complexidade da lógica usada para decidir o vencedor.
 //
-// Compilar:   gcc -std=c11 -Wall -Wextra -O2 TrunfoComparacao.c -o TrunfoComparacao
-// Executar:   ./TrunfoComparacao   (Windows: TrunfoComparacao.exe)
+// Como compilar:   gcc -std=c11 -Wall -Wextra -O2 TrunfoComparacao.c -o TrunfoComparacao
+// Como executar:   ./TrunfoComparacao   (ou TrunfoComparacao.exe no Windows)
 // =====================================================================
 
 #include <stdio.h>
@@ -13,7 +13,7 @@
 #include <ctype.h>
 
 // ---------------------------------------------------------------------
-// Estrutura de dados principal: Carta
+// Estrutura de uma carta
 // Representa uma cidade com atributos básicos e derivados.
 // ---------------------------------------------------------------------
 typedef struct {
@@ -30,15 +30,15 @@ typedef struct {
 } Carta;
 
 // ---------------------------------------------------------------------
-// Funções utilitárias de entrada e cálculo
+// Funções auxiliares de entrada e cálculo
 // ---------------------------------------------------------------------
 
-// Limpa o buffer do teclado após leitura numérica
+// Limpa caracteres extras no buffer do teclado após um scanf
 static void limparRestoDaLinha(void) {
     int c; while ((c = getchar()) != '\n' && c != EOF) {}
 }
 
-// Leitura de string (ex.: nome da cidade)
+// Leitura de string (nome da cidade)
 static void lerString(char *buf, size_t tam, const char *prompt) {
     printf("%s", prompt);
     if (fgets(buf, (int)tam, stdin) == NULL) { buf[0] = '\0'; return; }
@@ -46,7 +46,7 @@ static void lerString(char *buf, size_t tam, const char *prompt) {
     if (n && buf[n-1] == '\n') buf[n-1] = '\0';
 }
 
-// Leitura de valores numéricos
+// Leitura de números
 static unsigned long lerULong(const char *prompt) {
     unsigned long v; int ok;
     do { printf("%s", prompt); ok = scanf("%lu", &v); limparRestoDaLinha(); } while (ok != 1);
@@ -63,25 +63,25 @@ static float lerFloat(const char *prompt) {
     return v;
 }
 
-// Leitura de estado (converte para maiúsculo automaticamente)
+// Leitura de estado (uma letra, convertida para maiúscula)
 static char lerEstadoChar(const char *prompt) {
     char ch = 0; int ok;
     do { printf("%s", prompt); ok = scanf(" %c", &ch); limparRestoDaLinha(); } while (ok != 1);
     return (char)toupper((unsigned char)ch);
 }
 
-// Gera o código da carta (ex.: A03)
+// Monta o código da carta (ex.: A03)
 static void montarCodigo(Carta *c) {
     snprintf(c->codigo, sizeof c->codigo, "%c%02d", c->estado, c->cidade);
 }
 
-// Calcula atributos derivados
+// Calcula atributos derivados (densidade e PIB per capita)
 static void calcularDerivados(Carta *c) {
     c->densidade = (c->area != 0.0f) ? (float)((double)c->populacao / (double)c->area) : 0.0f;
     c->pib_per_capita = (c->populacao != 0UL) ? (float)((double)c->pib / (double)c->populacao) : 0.0f;
 }
 
-// Cadastro completo de uma carta
+// Cadastro de uma carta via terminal
 static void cadastrarCarta(Carta *c, const char *rotulo) {
     printf("\n--- %s ---\n", rotulo);
     c->estado = lerEstadoChar("Estado (A-H, 1 letra): ");
@@ -95,7 +95,7 @@ static void cadastrarCarta(Carta *c, const char *rotulo) {
     calcularDerivados(c);
 }
 
-// Impressão formatada da carta
+// Exibe os dados da carta formatados
 static void imprimirCarta(const Carta *c) {
     printf("[%s] %s\n", c->codigo, c->nome);
     printf("Estado: %c | Cidade: %d\n", c->estado, c->cidade);
@@ -108,14 +108,15 @@ static void imprimirCarta(const Carta *c) {
 }
 
 // ---------------------------------------------------------------------
-// Funções comparadoras (1 = Carta1 vence, 0 = Carta2 vence, -1 = empate)
+// Funções de comparação entre atributos
+// Retornam 1 (carta1 vence), 0 (carta2 vence) ou -1 (empate)
 // ---------------------------------------------------------------------
 static int cmpMaiorFloat(float a, float b) { return (a > b) ? 1 : (a < b) ? 0 : -1; }
 static int cmpMaiorUL(unsigned long a, unsigned long b) { return (a > b) ? 1 : (a < b) ? 0 : -1; }
 static int cmpMenorFloat(float a, float b) { return (a < b) ? 1 : (a > b) ? 0 : -1; }
 
 // ---------------------------------------------------------------------
-// Nível Novato — comparação simples usando if/else
+// Nível Novato — compara um atributo fixo usando if/else
 // ---------------------------------------------------------------------
 static void rodarNovato(void) {
     Carta c1 = {0}, c2 = {0};
@@ -126,7 +127,7 @@ static void rodarNovato(void) {
     printf("\n=== CARTA 2 ===\n"); imprimirCarta(&c2);
 
     // Comparação fixa: PIB (maior vence)
-    printf("\n=== COMPARACAO (Atributo: PIB — maior vence) ===\n");
+    printf("\n=== COMPARACAO (PIB — maior vence) ===\n");
     if (c1.pib > c2.pib) {
         printf("Vencedora: Carta 1 (%s)\n", c1.codigo);
     } else if (c1.pib < c2.pib) {
@@ -138,6 +139,7 @@ static void rodarNovato(void) {
 
 // ---------------------------------------------------------------------
 // Nível Aventureiro — menu interativo com switch
+// Usuário escolhe o atributo a ser comparado.
 // ---------------------------------------------------------------------
 static void rodarAventureiro(void) {
     Carta c1 = {0}, c2 = {0};
@@ -147,7 +149,6 @@ static void rodarAventureiro(void) {
     printf("\n=== CARTA 1 ===\n"); imprimirCarta(&c1);
     printf("\n=== CARTA 2 ===\n"); imprimirCarta(&c2);
 
-    // Menu de atributos disponíveis
     printf("\n=== MENU DE COMPARACAO ===\n");
     printf("1) Populacao (maior vence)\n");
     printf("2) Area (maior vence)\n");
@@ -157,13 +158,13 @@ static void rodarAventureiro(void) {
     printf("6) PIB per capita (maior vence)\n");
     int op = lerInt("Escolha: ");
 
-    int resultado = 0; // resultado da comparação
+    int resultado = 0;
     switch (op) {
         case 1: resultado = cmpMaiorUL(c1.populacao, c2.populacao); break;
         case 2: resultado = cmpMaiorFloat(c1.area, c2.area); break;
         case 3: resultado = cmpMaiorFloat(c1.pib, c2.pib); break;
         case 4: resultado = cmpMaiorUL((unsigned long)c1.pontos, (unsigned long)c2.pontos); break;
-        case 5: resultado = cmpMenorFloat(c1.densidade, c2.densidade); break; // menor vence
+        case 5: resultado = cmpMenorFloat(c1.densidade, c2.densidade); break;
         case 6: resultado = cmpMaiorFloat(c1.pib_per_capita, c2.pib_per_capita); break;
         default: printf("Opcao invalida.\n"); return;
     }
@@ -175,12 +176,11 @@ static void rodarAventureiro(void) {
 }
 
 // ---------------------------------------------------------------------
-// Nível Mestre — comparação de dois atributos com operadores ternários
+// Nível Mestre — comparação de dois atributos escolhidos
+// Cada atributo dá um ponto à carta vencedora. Usa operadores ternários.
 // ---------------------------------------------------------------------
-
 typedef enum { ATR_POP=1, ATR_AREA, ATR_PIB, ATR_PONTOS, ATR_DENSIDADE, ATR_PPC } Atributo;
 
-// Exibe o menu de atributos
 static void imprimirMenuAtributos(void) {
     printf("1) Populacao (maior)\n");
     printf("2) Area (maior)\n");
@@ -190,7 +190,6 @@ static void imprimirMenuAtributos(void) {
     printf("6) PIB per capita (maior)\n");
 }
 
-// Compara cartas por atributo específico
 static int compararPorAtributo(const Carta *c1, const Carta *c2, Atributo atr) {
     return (atr == ATR_POP)       ? cmpMaiorUL(c1->populacao, c2->populacao)
          : (atr == ATR_AREA)      ? cmpMaiorFloat(c1->area, c2->area)
@@ -201,7 +200,6 @@ static int compararPorAtributo(const Carta *c1, const Carta *c2, Atributo atr) {
          : -1;
 }
 
-// Retorna nome do atributo para exibir nos resultados
 static const char* nomeAtributo(Atributo a) {
     return (a==ATR_POP)?"Populacao":(a==ATR_AREA)?"Area":(a==ATR_PIB)?"PIB":
            (a==ATR_PONTOS)?"Pontos turisticos":(a==ATR_DENSIDADE)?"Densidade":
@@ -223,31 +221,34 @@ static void rodarMestre(void) {
     imprimirMenuAtributos();
     int a2 = lerInt("Segundo atributo (1-6): ");
 
-    // Comparação para cada atributo
     int r1 = compararPorAtributo(&c1, &c2, (Atributo)a1);
     int r2 = compararPorAtributo(&c1, &c2, (Atributo)a2);
 
-    // Pontuação acumulada usando operadores ternários
     int p1 = (r1==1 ? 1 : 0) + (r2==1 ? 1 : 0);
     int p2 = (r1==0 ? 1 : 0) + (r2==0 ? 1 : 0);
 
-    // Resultados parciais de cada atributo
     printf("\n=== RESULTADOS PARCIAIS ===\n");
-    printf("%s: %s\n", nomeAtributo((Atributo)a1), (r1==1?"Carta 1":"") ?: (r1==0?"Carta 2":"Empate"));
-    printf("%s: %s\n", nomeAtributo((Atributo)a2), (r2==1?"Carta 1":"") ?: (r2==0?"Carta 2":"Empate"));
+    printf("%s: ", nomeAtributo((Atributo)a1));
+    if (r1 == 1)      printf("Carta 1\n");
+    else if (r1 == 0) printf("Carta 2\n");
+    else              printf("Empate\n");
 
-    // Placar total
+    printf("%s: ", nomeAtributo((Atributo)a2));
+    if (r2 == 1)      printf("Carta 1\n");
+    else if (r2 == 0) printf("Carta 2\n");
+    else              printf("Empate\n");
+
     printf("\n=== PLACAR ===\nCarta 1: %d  |  Carta 2: %d\n", p1, p2);
 
-    // Decisão final com ternário aninhado
+    // Decisão final
     printf("\n=== VENCEDOR FINAL ===\n");
-    (p1 > p2) ? printf("Carta 1 (%s)\n", c1.codigo)
-    : (p2 > p1) ? printf("Carta 2 (%s)\n", c2.codigo)
-    : printf("Empate geral\n");
+    if (p1 > p2)      printf("Carta 1 (%s)\n", c1.codigo);
+    else if (p2 > p1) printf("Carta 2 (%s)\n", c2.codigo);
+    else              printf("Empate geral\n");
 }
 
 // ---------------------------------------------------------------------
-// Função principal — menu de escolha do nível
+// Função principal: mostra o menu de níveis e chama a lógica escolhida
 // ---------------------------------------------------------------------
 int main(void) {
     printf("===== Super Trunfo — Países (Comparação de Cartas) =====\n");
